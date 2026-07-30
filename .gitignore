@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+
+# 打包产物
+dist/
+
+# 运行/开发临时文件
+*.log
+preview.png
+petdiag.log
+e2e.log
+e2e.trigger
+dragtest.log
+dragtest.trigger
+icon.b64
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

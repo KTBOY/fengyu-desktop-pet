@@ -188,10 +188,10 @@ function createSettingsWindow() {
   const b = win ? win.getBounds() : { x: 300, y: 300, width: BASE_W, height: BASE_H };
   settingsWin = new BrowserWindow({
     width: 380,
-    height: 560,
+    height: 600,                        // 面板内容实测 583px，留余量避免页脚被裁
     useContentSize: true,               // 按内容区计算，避免挤出滚动条
     frame: false,                       // 无边框：页内自绘标题栏/关闭钮（Win11 自动圆角）
-    backgroundColor: '#f2f4f7',         // 与面板底色一致，避免加载瞬间白闪
+    backgroundColor: '#14161a',         // 与面板深色底一致，避免加载瞬间白闪
     x: Math.max(0, b.x - 400),
     y: Math.max(0, b.y + 40),
     title: '穗穗设置',
@@ -246,7 +246,7 @@ ipcMain.on('show-context-menu', () => {
       }
     },
     { type: 'separator' },
-    { label: '退出穗穗', click: () => app.quit() }
+    { label: '退出', click: () => app.quit() }
   ]);
   menu.popup({ window: win });
 });
@@ -258,10 +258,10 @@ function createTray() {
   } catch (e) {
     return; // 图标缺失时跳过托盘，不影响主功能
   }
-  tray.setToolTip('穗穗桌面精灵');
+  tray.setToolTip('桌面精灵');
   const menu = Menu.buildFromTemplate([
     { label: '显示 / 隐藏', click: () => { if (win.isVisible()) win.hide(); else win.show(); } },
-    { label: '设置…', click: () => createSettingsWindow() },
+    { label: '共鸣者终端', click: () => createSettingsWindow() },
     {
       label: '置顶显示',
       type: 'checkbox',
@@ -269,7 +269,7 @@ function createTray() {
       click: (item) => win && win.setAlwaysOnTop(item.checked, 'screen-saver')
     },
     { type: 'separator' },
-    { label: '退出穗穗', click: () => app.quit() }
+    { label: '退出', click: () => app.quit() }
   ]);
   tray.setContextMenu(menu);
   tray.on('double-click', () => { if (win.isVisible()) win.hide(); else win.show(); });

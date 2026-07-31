@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>设置面板 · 鸣潮风格设计稿</title>
+  <style>
+    /* ==========================================================
+       鸣潮设计语言取样（来自官网先导页实测 + 游戏内 UI 特征）
+         金       rgb(201,172,103)  #c9ac67   —— 主强调色
+         米白     rgb(250,250,233)  #fafae9   —— 正文/标题
+         近黑底   #14161a ~ #1c1f24            —— 深色基底
+       造型特征：直角/切角（不用圆角）、发丝级描边、HUD 角标、
+                 中文标题配大字距拉丁副标、点阵括号、菱形节点
+       ========================================================== */
+    :root {
+      --gold: #c9ac67;
+      --gold-bright: #e6cf95;
+      --gold-dim: rgba(201, 172, 103, .3);
+      --cream: #fafae9;
+      --cream-dim: rgba(250, 250, 233, .45);
+
+      --bg-0: #14161a;
+      --bg-1: #1b1e23;
+      --card: rgba(255, 255, 255, .035);
+      --hair: rgba(201, 172, 103, .2);
+
+      /* 角色主题色注入点：切角色时这一项变化，保留原有换肤机制 */
+      --theme: #d9b45c;
+
+      --ease: cubic-bezier(.32,.72,.24,1);
+      --latin: "Bahnschrift", "DIN Alternate", "Segoe UI", sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    /* 预览页背景（模拟桌面，正式版没有这层） */
+    body {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: #2a2d33;
+      font: 14px/1.6 "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+      color: var(--cream);
+      -webkit-user-select: none; user-select: none;
+      padding: 24px 0;
+    }
+
+    /* ====== 窗口：普通直角矩形（不用切角，风格靠 HUD 角标/双语标题/菱形节点撑） ====== */
+    .window {
+      width: 380px;
+      position: relative;
+      background:
+        radial-gradient(130% 80% at 100% 0%, rgba(201, 172, 103, .11), transparent 62%),
+        linear-gradient(168deg, var(--bg-1), var(--bg-0) 62%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+      overflow: hidden;
+    }
+    /* 斜向扫描纹理，极淡，只为质感 */
+    .window::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(115deg,
+        rgba(255, 255, 255, .022) 0 1px, transparent 1px 5px);
+      pointer-events: none;
+    }
+    /* 顶部一道金色细光边，通通拉满 */
+    .window::after {
+      content: '';
+      position: absolute; left: 0; right: 0; top: 0; height: 1px;
+      background: linear-gradient(90deg, var(--gold), rgba(201, 172, 103, .35));
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* ====== 标题栏 ====== */
+    .titlebar {
+      position: relative;
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 8px 9px 16px;
+      -webkit-app-region: drag;
+    }
+    /* 菱形标记：游戏内大量出现的小几何符号 */
+    .diamond {
+      width: 9px; height: 9px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      flex: none;
+      box-shadow: 0 0 8px rgba(201, 172, 103, .7);
+    }
+    .titlebar .tt { flex: 1; line-height: 1.15; }
+    .titlebar .tt b { font-size: 12.5px; font-weight: 600; letter-spacing: 1px; }
+    .titlebar .tt i {
+      display: block;
+      font: 400 8.5px/1 var(--latin);
+      letter-spacing: 2.4px;
+      color: var(--gold-dim);
+      font-style: normal;
+      margin-top: 2px;
+    }
+    .titlebar .close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--cream-dim);
+      transition: all .15s var(--ease);
+      -webkit-app-region: no-drag;
+    }
+    .titlebar .close:hover { color: #ff6b5e; background: rgba(255, 107, 94, .12); }
+
+    .wrap { position: relative; padding: 0 16px 14px; }
+
+    /* ====== 头部：角色名 + 拉丁副标 + 状态 ====== */
+    .head { padding: 2px 2px 14px; }
+    .head h1 {
+      font-size: 24px; font-weight: 700; letter-spacing: 3px;
+      line-height: 1.2;
+    }
+    .head .sub {
+      font: 400 9px/1 var(--latin);
+      letter-spacing: 3.4px;
+      color: var(--gold);
+      margin-top: 5px;
+    }
+    .head .state {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--cream-dim);
+      margin-top: 9px;
+    }
+    .head .state s {
+      width: 4px; height: 4px; background: #6ee7a0;
+      transform: rotate(45deg); text-decoration: none;
+      box-shadow: 0 0 6px #6ee7a0;
+    }
+
+    /* ====== 卡片：直角 + 发丝描边 + HUD 角标 ====== */
+    .card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--hair);
+      padding: 13px 14px;
+      margin-bottom: 9px;
+    }
+    /* 左上 / 右下 两个 L 形角标 */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 9px; height: 9px;
+      border-color: var(--gold);
+      pointer-events: none;
+    }
+    .card::before {
+      left: -1px; top: -1px;
+      border-top: 1.5px solid; border-left: 1.5px solid;
+    }
+    .card::after {
+      right: -1px; bottom: -1px;
+      border-bottom: 1.5px solid; border-right: 1.5px solid;
+    }
+
+    /* 卡片头：小方块 + 中文 + 横线 + 拉丁 */
+    .card-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .card-head .mk { width: 3px; height: 12px; background: var(--gold); flex: none; }
+    .card-head .zh { font-size: 13px; font-weight: 600; letter-spacing: 1.5px; }
+    .card-head .ln { flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-dim), transparent); }
+    .card-head .en {
+      font: 400 8.5px/1 var(--latin);
+      letter-spacing: 2.2px; color: var(--gold-dim);
+    }
+
+    /* ====== 角色选择 ====== */
+    .gallery {
+      display: flex; gap: 9px; overflow-x: auto;
+      padding: 6px 4px 12px; margin: -6px -4px -12px;
+      scrollbar-width: none;
+    }
+    .gallery::-webkit-scrollbar { display: none; }
+    .char {
+      position: relative; flex: none;
+      width: 84px; padding: 6px 6px 7px;
+      background: rgba(0, 0, 0, .28);
+      border: 1px solid rgba(255, 255, 255, .07);
+      text-align: center;
+      transition: all .2s var(--ease);
+    }
+    .char:hover { transform: translateY(-2px); border-color: rgba(201, 172, 103, .4); }
+    .char.active {
+      border-color: var(--gold);
+      background: rgba(201, 172, 103, .1);
+      box-shadow: 0 0 0 1px rgba(201, 172, 103, .25), 0 6px 18px rgba(0, 0, 0, .5);
+    }
+    /* 选中态四角 HUD 角标 */
+    .char .cn { position: absolute; width: 7px; height: 7px; border-color: var(--gold-bright); opacity: 0; transition: opacity .2s; }
+    .char.active .cn { opacity: 1; }
+    .char .cn:nth-of-type(1) { left: -1px; top: -1px; border-top: 1.5px solid; border-left: 1.5px solid; }
+    .char .cn:nth-of-type(2) { right: -1px; top: -1px; border-top: 1.5px solid; border-right: 1.5px solid; }
+    .char .cn:nth-of-type(3) { left: -1px; bottom: -1px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
+    .char .cn:nth-of-type(4) { right: -1px; bottom: -1px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
+
+    .char .thumb {
+      height: 86px;
+      /* 底色用该角色自身主题色（--c 逐卡注入），不随全局换肤 */
+      background:
+        linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, .5)),
+        linear-gradient(165deg, color-mix(in srgb, var(--c, var(--theme)) 32%, #12141a), #12141a);
+      display: flex; align-items: flex-end; justify-content: center;
+      overflow: hidden;
+    }
+    .char img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+    .char .nm {
+      font-size: 11.5px; letter-spacing: .5px;
+      margin-top: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--cream-dim);
+    }
+    .char.active .nm { color: var(--cream); font-weight: 600; }
+
+    /* ====== 大小：大号数字 + 切角滑轨 + 菱形滑块 ====== */
+    .val-row { display: flex; align-items: flex-end; justify-content: space-between; margin: -2px 0 2px; }
+    #val {
+      font: 700 32px/1 var(--latin);
+      color: var(--gold-bright);
+      letter-spacing: 1px;
+      text-shadow: 0 0 18px rgba(201, 172, 103, .45);
+    }
+    #val small { font-size: 13px; margin-left: 2px; color: var(--gold-dim); }
+    .val-row .hint { font: 400 8.5px/1 var(--latin); letter-spacing: 2px; color: var(--cream-dim); padding-bottom: 3px; }
+
+    .slider-box { padding: 8px 0 4px; }
+    input[type=range] {
+      width: 100%; height: 22px;
+      -webkit-appearance: none; background: transparent;
+      cursor: pointer; display: block;
+    }
+    /* 注：track 上不能用 clip-path——会连菱形 thumb 一起裁掉 */
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 4px;
+      background:
+        linear-gradient(90deg, var(--gold), var(--gold-bright)) 0/var(--pct, 50%) 100% no-repeat,
+        rgba(255, 255, 255, .1);
+    }
+    /* 菱形滑块：旋转 45° 的方块，鸣潮里滑块/节点常见造型。
+       宝石尺寸取 12px，旋转后对角线约 17px，靠 height:22px 容得下不被裁 */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      margin-top: -4px;
+      background: var(--gold-bright);
+      border: none;
+      transform: rotate(45deg);
+      box-shadow: 0 0 10px rgba(201, 172, 103, .85);
+      transition: box-shadow .12s var(--ease);
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      box-shadow: 0 0 16px rgba(230, 207, 149, 1);
+    }
+
+    .ticks {
+      display: flex; justify-content: space-between;
+      font: 400 9px/1 var(--latin); letter-spacing: 1.2px;
+      color: var(--cream-dim);
+      margin-top: 2px;
+    }
+
+    /* 预设（默认隐藏，保留代码） */
+    .presets {
+      position: relative;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      margin-top: 11px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      background: rgba(0, 0, 0, .25);
+    }
+    .presets .pill {
+      position: absolute; top: 0; bottom: 0; left: 0;
+      width: 25%;
+      background: rgba(201, 172, 103, .18);
+      border-bottom: 1.5px solid var(--gold);
+      transform: translateX(calc(var(--i, 2) * 100%));
+      transition: transform .28s var(--ease), opacity .18s;
+      pointer-events: none;
+    }
+    .presets button {
+      position: relative;
+      padding: 6px 0;
+      font-size: 12.5px; letter-spacing: 1px;
+      color: var(--cream-dim);
+      transition: color .18s var(--ease);
+    }
+    .presets button:hover { color: var(--cream); }
+    .presets button.active { color: var(--gold-bright); font-weight: 600; }
+
+    /* ====== 特效开关：方形拨杆 ====== */
+    .switch-row { display: flex; align-items: center; gap: 11px; }
+    .switch-row .ico {
+      width: 34px; height: 34px; flex: none;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold);
+      background: rgba(201, 172, 103, .1);
+      border: 1px solid var(--gold-dim);
+      /* 左上右下切角：边框会跟着 clip-path 一起被裁，自带勾边，所以不需要额外补线 */
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+    }
+    .switch-row .txt { flex: 1; min-width: 0; }
+    .switch-row .name { font-size: 13.5px; font-weight: 600; letter-spacing: 1px; }
+    .switch-row .desc { font-size: 11px; color: var(--cream-dim); }
+    .switch {
+      position: relative; flex: none;
+      width: 44px; height: 20px;
+      background: rgba(0, 0, 0, .45);
+      border: 1px solid rgba(255, 255, 255, .14);
+      transition: all .2s var(--ease);
+    }
+    .switch::after {
+      content: '';
+      position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 14px;
+      background: rgba(250, 250, 233, .5);
+      transition: transform .2s var(--ease), background .2s;
+      /* 拨杆斜切：实心色块，填色本身就是边缘，同样不需要勾边 */
+      clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+    }
+    .switch[aria-checked="true"] {
+      border-color: var(--gold);
+      background: rgba(201, 172, 103, .2);
+      box-shadow: 0 0 12px rgba(201, 172, 103, .3);
+    }
+    .switch[aria-checked="true"]::after {
+      transform: translateX(22px);
+      background: var(--gold-bright);
+    }
+
+    /* ====== 页脚：点阵括号（取自官网下载按钮的装饰） ====== */
+    .foot {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      padding-top: 10px;
+      font: 400 8.5px/1 var(--latin);
+      letter-spacing: 2px;
+      color: var(--cream-dim);
+    }
+    .foot .dots {
+      display: grid;
+      grid-template-columns: 2px 2px; grid-template-rows: 2px 2px 2px;
+      gap: 1.5px;
+      opacity: .55;
+    }
+    .foot .dots i { background: var(--gold); }
+    .foot .dots.r { transform: scaleX(-1); }
+  </style>
+</head>
+<body>
+  <div class="window">
+
+    <div class="titlebar">
+      <span class="diamond"></span>
+      <span class="tt">
+        <b>共鸣终端</b>
+        <i>RESONANCE TERMINAL</i>
+      </span>
+      <button class="close" aria-label="关闭">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <h1 id="title">穗穗</h1>
+        <div class="sub" id="subEn">RESONATOR / ACTIVE</div>
+        <div class="state"><s></s>参数即时同步 · 自动写入配置</div>
+      </div>
+
+      <!-- 角色 -->
+      <section class="card">
+        <div class="card-head">
+          <span class="mk"></span>
+          <span class="zh">共鸣者</span>
+          <span class="ln"></span>
+          <span class="en">RESONATOR</span>
+        </div>
+        <div id="gallery" class="gallery"></div>
+      </section>
+
+      <!-- 大小 -->
+      <section class="card">
+        <div class="card-head">
+          <span class="mk"></span>
+          <span class="zh">显形尺度</span>
+          <span class="ln"></span>
+          <span class="en">SCALE</span>
+        </div>
+        <div class="val-row">
+          <span id="val">100<small>%</small></span>
+          <span class="hint">30 — 150</span>
+        </div>
+        <div class="slider-box">
+          <input id="scale" type="range" min="30" max="150" step="1" value="100" />
+        </div>
+        <div class="ticks"><span>30</span><span>90</span><span>150</span></div>
+        <!-- 预设按钮保留代码，去掉 hidden 即可恢复 -->
+        <div class="presets" hidden>
+          <span class="pill"></span>
+          <button data-v="50">小</button>
+          <button data-v="75">中</button>
+          <button data-v="100">默认</button>
+          <button data-v="130">大</button>
+        </div>
+      </section>
+
+      <!-- 特效 -->
+      <section class="card">
+        <div class="switch-row">
+          <span class="ico">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.9 2.6 2.5 4.2 5 5-2.5.8-4.1 2.4-5 5-.9-2.6-2.5-4.2-5-5 2.5-.8 4.1-2.4 5-5Z"/><path d="M5 15c.4 1.3 1.2 2.1 2.5 2.5C6.2 17.9 5.4 18.7 5 20c-.4-1.3-1.2-2.1-2.5-2.5C3.8 17.1 4.6 16.3 5 15Z"/></svg>
+          </span>
+          <span class="txt">
+            <div class="name">星光特效</div>
+            <div class="desc">人物周围环绕闪烁的星星</div>
+          </span>
+          <button id="fx" class="switch" role="switch" aria-checked="true" aria-label="星光特效"></button>
+        </div>
+      </section>
+
+      <div class="foot">
+        <span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        ESC TO CLOSE · DRAG TO MOVE
+        <span class="dots r"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== 预览用模拟数据（正式版由 petAPI 提供） ======
+    const MOCK_CHARS = [
+      { id: 'fengyu', name: '穗穗', en: 'RESONATOR / ACTIVE', img: 'assets/char.png',
+        theme: { primary: '#d9b45c', primaryDark: '#c9932f' } },
+      { id: 'fengyu-azure', name: '穗穗·青', en: 'RESONATOR / AZURE', img: 'assets/char.png',
+        theme: { primary: '#5aa9d6', primaryDark: '#2e7bb0' } }
+    ];
+
+    const gallery = document.getElementById('gallery');
+    let cur = 'fengyu';
+
+    // 角色主题色接入 --theme，金色骨架保持不变（鸣潮的金是品牌色，不随角色变）
+    function applyTheme(t) {
+      if (t && t.primary) document.documentElement.style.setProperty('--theme', t.primary);
+    }
+
+    function renderGallery() {
+      gallery.innerHTML = '';
+      MOCK_CHARS.forEach((c) => {
+        const el = document.createElement('button');
+        el.className = 'char' + (c.id === cur ? ' active' : '');
+        el.style.setProperty('--c', c.theme.primary);   // 缩略图底色 = 角色自身主题色
+        el.innerHTML =
+          '<span class="cn"></span><span class="cn"></span><span class="cn"></span><span class="cn"></span>' +
+          '<div class="thumb"><img src="' + c.img + '" alt="' + c.name + '"></div>' +
+          '<div class="nm">' + c.name + '</div>';
+        el.onclick = () => {
+          cur = c.id;
+          applyTheme(c.theme);
+          document.getElementById('title').textContent = c.name;
+          document.getElementById('subEn').textContent = c.en;
+          renderGallery();
+        };
+        gallery.appendChild(el);
+      });
+    }
+    renderGallery();
+    applyTheme(MOCK_CHARS[0].theme);
+
+    // 大小
+    const slider = document.getElementById('scale');
+    const val = document.getElementById('val');
+    const buttons = Array.from(document.querySelectorAll('.presets button'));
+    const pill = document.querySelector('.presets .pill');
+    function render(pct) {
+      val.innerHTML = pct + '<small>%</small>';
+      slider.style.setProperty('--pct', ((pct - 30) / 120 * 100) + '%');
+      const idx = buttons.findIndex((b) => Number(b.dataset.v) === pct);
+      buttons.forEach((b, i) => b.classList.toggle('active', i === idx));
+      pill.style.opacity = idx < 0 ? '0' : '1';
+      if (idx >= 0) pill.style.setProperty('--i', idx);
+    }
+    slider.addEventListener('input', () => render(Number(slider.value)));
+    buttons.forEach((b) => b.addEventListener('click', () => { slider.value = b.dataset.v; render(Number(b.dataset.v)); }));
+    render(100);
+
+    // 开关
+    const fx = document.getElementById('fx');
+    fx.onclick = () => fx.setAttribute('aria-checked', fx.getAttribute('aria-checked') !== 'true');
+  </script>
+</body>
+</html>

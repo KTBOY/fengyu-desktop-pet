@@ -39,16 +39,19 @@ const requested = process.argv.slice(2).filter((a) => !a.startsWith('-'));
 const available = allCharIds();
 
 // 基础排除项（脚本/日志/开发临时文件等）
+// 注：用宽松匹配，避免新增文件名时又漏进包
 const ignore = [
   /(^|[\/\\])dist([\/\\]|$)/,
+  /(^|[\/\\])\.git([\/\\]|$)/,
+  /(^|[\/\\])\.qoder([\/\\]|$)/,          // Agent skill 等开发时资产
   /\.log$/,
   /(^|[\/\\])(server|make-icon|pack)\.js$/,
   /(^|[\/\\])preview\.png$/,
   /(^|[\/\\])icon\.b64$/,
-  /\.glb$/,                      // 遗留 3D 模型（源码零引用，76MB，不进包）
-  /(^|[\/\\])face-collect([\/\\]|$)/,   // UI 演示页，与桌宠无关
-  /(^|[\/\\])settings-preview\.html$/,   // 设置面板设计稿，仅开发参考
-  /_perf_check\.png$/,
+  /\.glb$/,                                // 遗留 3D 模型（源码零引用，76MB）
+  /(^|[\/\\])face-collect([\/\\]|$)/,     // UI 演示页，与桌宠无关
+  /(^|[\/\\])settings-preview[^\/\\]*\.html$/,   // 设置面板设计稿，仅开发参考
+  /(^|[\/\\])_[^\/\\]*\.(png|jpe?g|gif)$/,       // 下划线开头的验证截图
   /(^|[\/\\])agent\.md$/,
   /e2e/,
   /petdiag/

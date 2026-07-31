@@ -1,9 +1,15 @@
 /**
  * character.js —— 精灵图加载 + Canvas 边缘洪水填充抠图（去白底，保留人物内部白色）
+ * 性能要点：
+ *  1) 像素处理放入 Web Worker，主线程不再被 200 万像素的抠图卡死（启动秒开）；
+ *  2) 处理结果按 src 缓存，多角色共用同一张立绘时切换零成本；
+ *  3) Worker 不可用时退回主线程同步处理，行为与旧版一致。
  * 对外暴露 window.Sprite
  */
 (function () {
   'use strict';
+
+  // ---------- 像素处理核心（同一份实现：Worker 内与主线程兜底共用） ----------
 
   // 判断是否"背景白" —— 接近纯白且低饱和
   function isBgColor(px, o) {
@@ -60,27 +66,66 @@
   }
 
   // 边缘羽化：与透明相邻的不透明像素降一点 alpha，过渡更自然
+  // 用整幅 Uint8Array 记邻接数（旧版给每个边缘像素 new 一个小数组，触发大量 GC）
   function feather(px, w, h) {
     const N = w * h;
-    const soft = [];
+    const tn = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       const o = i * 4;
       if (px[o + 3] === 0) continue;
       const x = i % w, y = (i / w) | 0;
-      let tn = 0;
-      if (x > 0 && px[(i - 1) * 4 + 3] === 0) tn++;
-      if (x < w - 1 && px[(i + 1) * 4 + 3] === 0) tn++;
-      if (y > 0 && px[(i - w) * 4 + 3] === 0) tn++;
-      if (y < h - 1 && px[(i + w) * 4 + 3] === 0) tn++;
-      if (tn > 0) soft.push([i, tn]);
+      let t = 0;
+      if (x > 0 && px[(i - 1) * 4 + 3] === 0) t++;
+      if (x < w - 1 && px[(i + 1) * 4 + 3] === 0) t++;
+      if (y > 0 && px[(i - w) * 4 + 3] === 0) t++;
+      if (y < h - 1 && px[(i + w) * 4 + 3] === 0) t++;
+      tn[i] = t;
     }
-    for (const [i, tn] of soft) px[i * 4 + 3] = Math.round(255 * (1 - 0.22 * tn));
+    for (let i = 0; i < N; i++) {
+      if (tn[i]) px[i * 4 + 3] = Math.round(255 * (1 - 0.22 * tn[i]));
+    }
   }
+
+  function processPixels(px, w, h) {
+    floodRemove(px, w, h);
+    erodeHalo(px, w, h, 2);
+    feather(px, w, h);
+  }
+
+  // ---------- Worker：用函数源码拼脚本，保持单一实现 ----------
+  let worker;                         // undefined=未创建 null=不可用
+  const pending = [];                 // FIFO 回调队列（Worker 消息按提交顺序返回）
+  function getWorker() {
+    if (worker !== undefined) return worker;
+    try {
+      const src = [isBgColor, floodRemove, erodeHalo, feather, processPixels]
+        .map((f) => f.toString()).join('\n') +
+        '\nself.onmessage = function (e) {' +
+        '  var px = new Uint8ClampedArray(e.data.buf);' +
+        '  processPixels(px, e.data.w, e.data.h);' +
+        '  self.postMessage({ buf: px.buffer }, [px.buffer]);' +
+        '};';
+      worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      worker.onmessage = (e) => { const cb = pending.shift(); cb && cb(e.data); };
+    } catch (e) { worker = null; }
+    return worker;
+  }
+
+  const cache = new Map();            // src -> { canvas, w, h, cutout }
 
   const Sprite = {
     canvas: null, w: 0, h: 0, ready: false, cutout: false,
 
+    _apply(entry, onready) {
+      this.canvas = entry.canvas; this.w = entry.w; this.h = entry.h;
+      this.cutout = entry.cutout; this.ready = true;
+      onready && onready();
+    },
+
     load(src, onready) {
+      const hit = cache.get(src);     // 同图秒回：两个角色共用一张立绘时切换不再重算
+      if (hit) { this._apply(hit, onready); return; }
+
       const img = new Image();
       img.onload = () => {
         const w = img.naturalWidth, h = img.naturalHeight;
@@ -88,19 +133,35 @@
         cv.width = w; cv.height = h;
         const cx = cv.getContext('2d', { willReadFrequently: true });
         cx.drawImage(img, 0, 0);
+
+        const done = (cutout) => {
+          const entry = { canvas: cv, w, h, cutout };
+          cache.set(src, entry);
+          this._apply(entry, onready);
+        };
+
+        let data;
         try {
-          const data = cx.getImageData(0, 0, w, h);
-          floodRemove(data.data, w, h);
-          erodeHalo(data.data, w, h, 2);
-          feather(data.data, w, h);
-          cx.putImageData(data, 0, 0);
-          this.cutout = true;
+          data = cx.getImageData(0, 0, w, h);
         } catch (e) {
           // file:// 直接加载会污染画布导致抠图失败（仅浏览器预览时）——退回原图
-          this.cutout = false;
+          done(false);
+          return;
         }
-        this.canvas = cv; this.w = w; this.h = h; this.ready = true;
-        onready && onready();
+
+        const wk = getWorker();
+        if (wk) {
+          // 转移 buffer 零拷贝送入 Worker，处理完再写回；主线程全程不阻塞
+          pending.push((res) => {
+            cx.putImageData(new ImageData(new Uint8ClampedArray(res.buf), w, h), 0, 0);
+            done(true);
+          });
+          wk.postMessage({ buf: data.data.buffer, w, h }, [data.data.buffer]);
+        } else {
+          processPixels(data.data, w, h);
+          cx.putImageData(data, 0, 0);
+          done(true);
+        }
       };
       img.onerror = () => { onready && onready(new Error('image load failed')); };
       img.src = src;

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>桌面精灵设置</title>
+  <style>
+    /* ====== 设计令牌：强调色由角色主题驱动（换角色自动换肤） ====== */
+    :root {
+      --primary: #d9b45c;
+      --primary-dark: #c9932f;
+      --track1: #e8c979;
+      --track2: #d9b45c;
+
+      --bg: #f2f4f7;              /* 中性浅灰底 */
+      --card: #ffffff;            /* 纯白卡片 */
+      --ink: #1f2329;
+      --sub: #8a919c;
+      --radius: 14px;
+      --shadow-card: 0 1px 3px rgba(20, 30, 50, .04), 0 6px 20px rgba(20, 30, 50, .05);
+      --ease: cubic-bezier(.32,.72,.24,1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* 防止元素自身 display 规则盖掉 hidden */
+    button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.6 "Segoe UI", "Microsoft YaHei", sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* ====== 自绘标题栏（无边框窗口拖动区） ====== */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 10px 8px 18px;
+      -webkit-app-region: drag;
+    }
+    .titlebar .dot {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      background: linear-gradient(140deg, var(--track1), var(--primary-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .titlebar .t { font-size: 13px; font-weight: 600; flex: 1; color: var(--sub); }
+    .titlebar .close {
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sub);
+      transition: all .15s var(--ease);
+      -webkit-app-region: no-drag;
+    }
+    .titlebar .close:hover { background: rgba(224, 68, 68, .1); color: #d43c3c; }
+
+    .wrap { padding: 2px 16px 16px; }
+
+    /* 头部：当前角色名 + 自动保存状态 */
+    .head { padding: 4px 4px 12px; }
+    .head h1 { font-size: 21px; font-weight: 700; letter-spacing: .5px; }
+    .head p { font-size: 12px; color: var(--sub); margin-top: 2px; }
+    .head .save-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #34c05e;
+      margin-right: 5px;
+      vertical-align: 1px;
+    }
+
+    /* ====== 白卡片 ====== */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .card-head .c-ico {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .card-head .c-t { font-size: 13.5px; font-weight: 600; flex: 1; }
+
+    /* ====== 角色选择 ====== */
+    /* 滚动容器会同时裁剪纵向内容：用内边距给 hover 上移与阴影留出绘制空间，
+       再用负 margin 抵消占位，视觉布局不变 */
+    .gallery {
+      display: flex; gap: 10px; overflow-x: auto;
+      padding: 8px 6px 16px;
+      margin: -8px -6px -16px;
+    }
+    .char {
+      flex: none;
+      width: 86px;
+      border-radius: 12px;
+      padding: 7px 7px 8px;
+      background: #f6f7f9;
+      border: 1.5px solid transparent;
+      text-align: center;
+      transition: all .18s var(--ease);
+      position: relative;
+    }
+    .char:hover { transform: translateY(-2px); }
+    .char.active {
+      border-color: var(--primary-dark);
+      background: #fff;
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--primary-dark) 20%, transparent);
+    }
+    .char .thumb {
+      height: 84px;
+      border-radius: 9px;
+      /* 用角色自己的主题色（--c 由 JS 逐卡注入），不随当前选中角色的全局主题变色 */
+      background: linear-gradient(170deg, color-mix(in srgb, var(--c, var(--primary)) 8%, #fff), color-mix(in srgb, var(--c, var(--primary)) 20%, #fff));
+      display: flex; align-items: flex-end; justify-content: center;
+      overflow: hidden;
+    }
+    .char img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+    .char .nm {
+      font-size: 12px; font-weight: 500;
+      margin-top: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .char .check {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--primary-dark);
+      color: #fff;
+      display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,.2);
+    }
+    .char.active .check { display: flex; }
+
+    /* ====== 大小调节：大数字强调 ====== */
+    #val {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    #val small { font-size: 13px; font-weight: 600; margin-left: 2px; color: var(--sub); }
+
+    .slider-box { padding: 6px 0 0; }
+    input[type=range] {
+      width: 100%;
+      height: 24px;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+      display: block;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 4px;
+      background:
+        linear-gradient(90deg, var(--track2), var(--track1)) 0/var(--pct, 58%) 100% no-repeat,
+        #edeff2;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      margin-top: -5px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.5px solid var(--primary-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+      transition: transform .12s var(--ease);
+    }
+    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.18); }
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--sub);
+    }
+
+    /* 预设：分段控件 + 滑块指示器动画（当前隐藏，去掉 HTML 里的 hidden 即可恢复） */
+    .presets {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 10px;
+      background: #f0f2f5;
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .presets .pill {
+      position: absolute;
+      top: 3px; bottom: 3px; left: 3px;
+      width: calc((100% - 6px) / 4);
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+      transform: translateX(calc(var(--i, 2) * 100%));
+      transition: transform .28s var(--ease), opacity .18s;
+      pointer-events: none;
+    }
+    .presets button {
+      position: relative;          /* 压在 pill 上方 */
+      padding: 5px 0;
+      border-radius: 7px;
+      font-size: 13px;
+      color: var(--sub);
+      transition: color .18s var(--ease);
+    }
+    .presets button:hover { color: var(--ink); }
+    .presets button.active {
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    /* ====== 特效开关 ====== */
+    .switch-row { display: flex; align-items: center; gap: 12px; }
+    .switch-row .ico {
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      background: color-mix(in srgb, var(--primary) 15%, #fff);
+      color: var(--primary-dark);
+      display: flex; align-items: center; justify-content: center;
+      flex: none;
+    }
+    .switch-row .txt { flex: 1; min-width: 0; }
+    .switch-row .name { font-weight: 600; font-size: 14px; }
+    .switch-row .desc { font-size: 12px; color: var(--sub); }
+    .switch {
+      position: relative;
+      flex: none;
+      width: 46px; height: 26px;
+      border-radius: 13px;
+      background: #d5d9e0;
+      transition: background .2s var(--ease);
+    }
+    .switch::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+      transition: transform .2s var(--ease);
+    }
+    .switch[aria-checked="true"] { background: var(--primary-dark); }
+    .switch[aria-checked="true"]::after { transform: translateX(20px); }
+
+    .foot {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--sub);
+      padding-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="titlebar">
+    <span class="dot">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.9 2.6 2.5 4.2 5 5-2.5.8-4.1 2.4-5 5-.9-2.6-2.5-4.2-5-5 2.5-.8 4.1-2.4 5-5Z"/></svg>
+    </span>
+    <span class="t">桌面精灵设置</span>
+    <button id="closeBtn" class="close" aria-label="关闭">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+
+  <div class="wrap">
+    <div class="head">
+      <h1 id="title">桌面精灵</h1>
+      <p><span class="save-dot"></span>所有改动即时生效并自动保存</p>
+    </div>
+
+    <!-- 角色 -->
+    <section class="card">
+      <div class="card-head">
+        <span class="c-ico" style="background:linear-gradient(140deg,#7aa5f0,#4d7de0)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </span>
+        <span class="c-t">角色</span>
+      </div>
+      <div id="gallery" class="gallery"></div>
+    </section>
+
+    <!-- 大小 -->
+    <section class="card">
+      <div class="card-head" style="margin-bottom:4px">
+        <span class="c-ico" style="background:linear-gradient(140deg,#f0b35c,#e08b2d)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 14 10M21 3v6M21 3h-6M3 21l7-7M3 21v-6M3 21h6"/></svg>
+        </span>
+        <span class="c-t">人物大小</span>
+        <span id="val">100<small>%</small></span>
+      </div>
+      <div class="slider-box">
+        <!-- step=1 连续拖动不跳格；setScale 经 rAF 节流，拖动不再逐事件轰炸主进程 -->
+        <input id="scale" type="range" min="30" max="150" step="1" value="100" />
+      </div>
+      <div class="ticks"><span>30%</span><span>90%</span><span>150%</span></div>
+      <!-- 预设按钮暂隐藏（代码保留，去掉 hidden 即可恢复），大小调节只靠滑杆拖拽 -->
+      <div class="presets" hidden>
+        <span class="pill"></span>
+        <button data-v="50">小</button>
+        <button data-v="75">中</button>
+        <button data-v="100">默认</button>
+        <button data-v="130">大</button>
+      </div>
+    </section>
+
+    <!-- 特效 -->
+    <section class="card">
+      <div class="switch-row">
+        <span class="ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.9 2.6 2.5 4.2 5 5-2.5.8-4.1 2.4-5 5-.9-2.6-2.5-4.2-5-5 2.5-.8 4.1-2.4 5-5Z"/><path d="M5 15c.4 1.3 1.2 2.1 2.5 2.5C6.2 17.9 5.4 18.7 5 20c-.4-1.3-1.2-2.1-2.5-2.5C3.8 17.1 4.6 16.3 5 15Z"/></svg>
+        </span>
+        <span class="txt">
+          <div class="name">星光特效</div>
+          <div class="desc">人物周围环绕闪烁的星星</div>
+        </span>
+        <button id="fx" class="switch" role="switch" aria-checked="true" aria-label="星光特效"></button>
+      </div>
+    </section>
+
+    <div class="foot">点击角色缩略图切换 · 窗口随大小一起缩放 · Esc 关闭</div>
+  </div>
+
+  <script>
+    const api = window.petAPI;
+    const title = document.getElementById('title');
+    const gallery = document.getElementById('gallery');
+    const slider = document.getElementById('scale');
+    const val = document.getElementById('val');
+    const fx = document.getElementById('fx');
+    const buttons = Array.from(document.querySelectorAll('.presets button'));
+    const pill = document.querySelector('.presets .pill');
+
+    document.getElementById('closeBtn').addEventListener('click', () => window.close());
+
+    // ---------- 主题：把角色 theme 写入 CSS 变量，面板随角色换肤 ----------
+    const THEME_VARS = {
+      primary: '--primary', primaryDark: '--primary-dark', track1: '--track1', track2: '--track2'
+    };
+    function applyTheme(theme) {
+      if (!theme) return;
+      const rs = document.documentElement.style;
+      for (const k in THEME_VARS) { if (theme[k]) rs.setProperty(THEME_VARS[k], theme[k]); }
+    }
+
+    // ---------- 角色画廊 ----------
+    let charList = [], currentSel = null;
+    function highlight(id) {
+      Array.from(gallery.children).forEach((n) => n.classList.toggle('active', n.dataset.id === id));
+    }
+    function renderGallery(list, curId) {
+      gallery.innerHTML = '';
+      list.forEach((c) => {
+        const el = document.createElement('button');
+        el.className = 'char' + (c.id === curId ? ' active' : '');
+        el.dataset.id = c.id;
+        // 缩略图底色固定为角色自身主题色，不随全局主题变
+        if (c.theme && c.theme.primary) el.style.setProperty('--c', c.theme.primary);
+
+        const check = document.createElement('span');
+        check.className = 'check';
+        check.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        const img = document.createElement('img');
+        img.src = c.imageDataURL || '';
+        img.alt = c.name;
+        thumb.appendChild(img);
+        const nm = document.createElement('div');
+        nm.className = 'nm';
+        nm.textContent = c.name;
+
+        el.appendChild(check);
+        el.appendChild(thumb);
+        el.appendChild(nm);
+        el.addEventListener('click', () => {
+          if (c.id === currentSel) return;
+          currentSel = c.id;
+          highlight(c.id);                       // 先本地即时高亮，主进程随后广播 character-changed 再确认换肤
+          if (api) api.setCharacter(c.id);
+        });
+        gallery.appendChild(el);
+      });
+    }
+
+    // ---------- 大小 ----------
+    function render(pct) {
+      val.innerHTML = pct + '<small>%</small>';
+      slider.style.setProperty('--pct', ((pct - 30) / 120 * 100) + '%');
+      // 命中预设值时 pill 滑到对应按钮，否则淡出（预设当前隐藏，逻辑保留）
+      const idx = buttons.findIndex((b) => Number(b.dataset.v) === pct);
+      buttons.forEach((b, i) => b.classList.toggle('active', i === idx));
+      pill.style.opacity = idx < 0 ? '0' : '1';
+      if (idx >= 0) pill.style.setProperty('--i', idx);
+    }
+
+    // rAF 节流：拖动时 UI 即时反馈，但发往主进程的 setScale 每帧最多一次
+    // （主进程每次都要 setBounds 调窗口，逐事件发送是拖动卡顿的主因）
+    let pendingScale = null, rafId = 0;
+    function sendScale(pct) {
+      pendingScale = pct;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (api) api.setScale(pendingScale / 100);
+      });
+    }
+    function apply(pct) {
+      slider.value = pct;
+      render(pct);
+      sendScale(pct);
+    }
+    function applyEffects(on) {
+      fx.setAttribute('aria-checked', on ? 'true' : 'false');
+      if (api) api.setEffects(on);
+    }
+
+    slider.addEventListener('input', () => apply(Number(slider.value)));
+    buttons.forEach((b) => b.addEventListener('click', () => apply(Number(b.dataset.v))));
+    fx.addEventListener('click', () => applyEffects(fx.getAttribute('aria-checked') !== 'true'));
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.close(); });
+
+    // ---------- 初始化：同步大小/特效 + 角色列表/当前角色 ----------
+    if (api) {
+      api.getSettings().then((cfg) => {
+        const pct = Math.round(((cfg && cfg.scale) || 1) * 100);
+        slider.value = pct;
+        render(pct);
+        fx.setAttribute('aria-checked', (!cfg || cfg.effects !== false) ? 'true' : 'false');
+      });
+
+      Promise.all([api.getCharacters(), api.getCurrentCharacter()]).then(([list, cur]) => {
+        charList = list || [];
+        currentSel = cur ? cur.id : (charList[0] && charList[0].id) || null;
+        renderGallery(charList, currentSel);
+        if (cur) { applyTheme(cur.theme); title.textContent = cur.name; }
+      });
+
+      if (api.onCharacterChanged) api.onCharacterChanged((c) => {
+        if (!c) return;
+        currentSel = c.id;
+        highlight(c.id);
+        applyTheme(c.theme);
+        title.textContent = c.name;
+      });
+    }
+  </script>
+</body>
+</html>

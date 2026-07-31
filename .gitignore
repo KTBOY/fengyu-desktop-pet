@@ -4,6 +4,12 @@ node_modules/
 # 打包产物
 dist/
 
+# 遗留大文件（3D 模型，源码零引用，不入库）
+*.glb
+
+# 开发临时截图
+_*.png
+
 # 运行/开发临时文件
 *.log
 preview.png

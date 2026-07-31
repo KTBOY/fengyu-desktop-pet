@@ -1,0 +1,27 @@
+{
+  "id": "fengyu-azure",
+  "name": "穗穗·青",
+  "image": "../../char.png",
+  "theme": {
+    "primary": "#5aa9d6",
+    "primaryDark": "#2e7bb0",
+    "ink": "#1f3a4a",
+    "sub": "#5a7a8a",
+    "panelBg1": "#f7fcff",
+    "panelBg2": "#e3f1fb",
+    "bubbleBg": "rgba(245,251,255,0.96)",
+    "track1": "#9cd2ee",
+    "track2": "#5aa9d6",
+    "spark": "#bfe6ff",
+    "heart": "#e86a7c",
+    "burst": "#7ec8f0",
+    "glow": "150,210,255"
+  },
+  "lines": [
+    "青羽拂过，带来一丝清凉～",
+    "换个颜色，心情也不一样了吧？",
+    "我是穗穗的青羽之姿哦",
+    "水色的羽毛，最适合安静地陪你",
+    "点点我，也可以在设置里换回来～"
+  ]
+}

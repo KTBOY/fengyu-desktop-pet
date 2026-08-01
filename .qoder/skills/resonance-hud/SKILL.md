@@ -1,40 +1,40 @@
 ---
 name: resonance-hud
-description: Applies a dark-gold game HUD design language to web interfaces — near-black base, single brand-gold accent, hairline borders, pure right angles, L-shaped corner brackets, bilingual CJK/Latin section labels, diamond nodes and dotted-bracket ornaments. Use when building game-style or tech-noir UI, settings panels, overlays, launchers, HUD dashboards, desktop pet/companion apps, or when the user asks for a "鸣潮 / Wuthering Waves 风格", "游戏 HUD 风格", "深色金调", "二次元科技感" interface. Vanilla CSS variables and HTML, no framework or asset dependencies.
+description: 为 Web 界面应用一套深色金调的游戏 HUD 设计语言——近黑基底、单一品牌金强调色、发丝级描边、纯直角、L 形四角角标、中英双语区块标题、菱形节点与点阵括号装饰。当用户需要游戏风格 / 科技暗调 UI、设置面板、悬浮层、启动器、HUD 仪表盘、桌宠伴侣应用，或提到「鸣潮 / Wuthering Waves 风格」「游戏 HUD 风格」「深色金调」「二次元科技感」界面时使用。纯 CSS 变量 + HTML，无框架与素材依赖。
 ---
 
 # Resonance HUD
 
-A design language for dark, gold-accented game HUD interfaces. Every ornament is drawn with CSS or inline SVG — no image assets, no web fonts, crisp at any DPI.
+一套深色金调游戏 HUD 界面的设计语言。所有装饰均由 CSS 或内联 SVG 绘制——零图片素材、零 Web 字体，任意 DPI 下都锐利。
 
-## When to use
+## 适用场景
 
-Fits: settings panels, overlays, launchers, HUD dashboards, character/inventory pickers, desktop companion apps, anything that should feel like an in-game terminal.
+适合：设置面板、悬浮层、启动器、HUD 仪表盘、角色/道具选择器、桌面伴侣应用，一切应该像"游戏内终端"的东西。
 
-Does not fit: content-heavy reading interfaces, forms with many inputs, light-theme products, anything needing a friendly/soft tone. The palette is high-contrast and the ornaments compete with dense text.
+不适合：以阅读为主的内容型界面、输入项繁多的表单、浅色主题产品、需要亲切柔和调性的场景。这套配色对比强烈，装饰元素会与密集文本抢夺注意力。
 
-## Design tokens
+## 设计令牌
 
-Copy verbatim. These values are sampled from a shipped product, not invented — do not "improve" the hues.
+原样复制。这些值取样自已上线的产品，不是拍脑袋定的——不要"优化"这些色相。
 
 ```css
 :root {
-  /* Brand — fixed, never themed per-user or per-content */
+  /* 品牌色 —— 固定不变，永远不随用户或内容换肤 */
   --gold:        #c9ac67;
   --gold-bright: #e6cf95;
   --gold-dim:    rgba(201, 172, 103, .3);
 
-  /* Text */
+  /* 文字 */
   --cream:     #fafae9;
   --cream-dim: rgba(250, 250, 233, .45);
 
-  /* Surfaces */
-  --bg-0: #14161a;                       /* deepest */
-  --bg-1: #1b1e23;                       /* panel top */
-  --card: rgba(255, 255, 255, .035);      /* card fill — translucent, not solid */
-  --hair: rgba(201, 172, 103, .2);        /* hairline border */
+  /* 表面 */
+  --bg-0: #14161a;                       /* 最深底 */
+  --bg-1: #1b1e23;                       /* 面板上部 */
+  --card: rgba(255, 255, 255, .035);      /* 卡片填充 —— 半透明，不用实色 */
+  --hair: rgba(201, 172, 103, .2);        /* 发丝级描边 */
 
-  /* Accent slot — the ONE token allowed to change with content */
+  /* 强调色槽位 —— 唯一允许随内容变化的令牌 */
   --theme: #d9b45c;
 
   --ease:  cubic-bezier(.32,.72,.24,1);
@@ -42,9 +42,9 @@ Copy verbatim. These values are sampled from a shipped product, not invented —
 }
 ```
 
-`--latin` matters: the wide-tracked Latin labels need a condensed technical face. `Bahnschrift` ships with Windows 10+, `DIN Alternate` with macOS. Never substitute a humanist sans.
+`--latin` 很关键：大字距拉丁标签需要一个窄体工业感字体。`Bahnschrift` 是 Windows 10+ 自带，`DIN Alternate` 是 macOS 自带。绝不要换成人文主义无衬线体。
 
-## Panel base
+## 面板基底
 
 ```css
 .panel {
@@ -55,7 +55,7 @@ Copy verbatim. These values are sampled from a shipped product, not invented —
   box-shadow: 0 20px 60px rgba(0,0,0,.6);
   overflow: hidden;
 }
-/* Diagonal scanline texture — 2.2% opacity, texture only, must not read as stripes */
+/* 斜向扫描纹理 —— 2.2% 透明度，只做质感，绝不能读出条纹感 */
 .panel::before {
   content: '';
   position: absolute; inset: 0;
@@ -63,7 +63,7 @@ Copy verbatim. These values are sampled from a shipped product, not invented —
     rgba(255,255,255,.022) 0 1px, transparent 1px 5px);
   pointer-events: none;
 }
-/* Gold hairline along the top edge */
+/* 顶边金色发丝光线 */
 .panel::after {
   content: '';
   position: absolute; left: 0; right: 0; top: 0; height: 1px;
@@ -72,15 +72,15 @@ Copy verbatim. These values are sampled from a shipped product, not invented —
 }
 ```
 
-The off-center radial glow (anchored top-right) plus the top hairline is what separates this from generic dark mode. Keep both.
+锚定在右上角的偏心径向辉光 + 顶部发丝光线，是这套语言区别于普通暗色模式的关键。两者都要保留。
 
-## Six signature elements
+## 六个签名元素
 
-Use at least four. All six is not too many — the density is the point.
+至少用四个。六个全上也不算多——密度本身就是这个风格的一部分。
 
-### 1. Corner brackets
+### 1. 四角角标
 
-The load-bearing element. L-shaped gold marks on opposite corners of every card.
+承重元素。每张卡片对角放 L 形金色标记。
 
 ```css
 .card { position: relative; background: var(--card); border: 1px solid var(--hair); padding: 13px 14px; }
@@ -93,11 +93,11 @@ The load-bearing element. L-shaped gold marks on opposite corners of every card.
 .card::after  { right: -1px; bottom: -1px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
 ```
 
-`-1px` offsets so brackets sit on top of the 1px border rather than inside it. For selected/active states, light all four corners with `--gold-bright`.
+`-1px` 偏移让角标压在 1px 边框之上而不是缩在内侧。选中/激活态改为四角全亮，颜色用 `--gold-bright`。
 
-### 2. Bilingual section header
+### 2. 中英双语区块标题
 
-CJK title, connecting rule, wide-tracked uppercase Latin. The size ratio is not adjustable: CJK 13px semibold, Latin 8.5px with 2.2px tracking.
+中文标题、连接横线、大字距大写拉丁文。尺寸比例不可调：中文 13px 半粗，拉丁 8.5px 配 2.2px 字距。
 
 ```html
 <div class="card-head">
@@ -116,11 +116,11 @@ CJK title, connecting rule, wide-tracked uppercase Latin. The size ratio is not 
 .card-head .en { font: 400 8.5px/1 var(--latin); letter-spacing: 2.2px; color: var(--gold-dim); }
 ```
 
-The Latin label is decoration with a job: it names the domain concept. Translate the meaning, do not transliterate — 人物大小 becomes `SCALE`, not `RENWU DAXIAO`.
+拉丁标签是"有工作的装饰"：它要说清这个区块的领域概念。翻译含义，不要音译——「人物大小」对应 `SCALE`，不是 `RENWU DAXIAO`。
 
-### 3. Diamond nodes
+### 3. 菱形节点
 
-45°-rotated squares replace dots, bullets and slider thumbs.
+旋转 45° 的方块，替代所有圆点、项目符号和滑块。
 
 ```css
 .diamond {
@@ -130,9 +130,9 @@ The Latin label is decoration with a job: it names the domain concept. Translate
 }
 ```
 
-### 4. Oversized numeric readout
+### 4. 大号数字读数
 
-Any numeric value gets promoted to a hero element in Latin mono-ish type with a gold bloom.
+任何数值都提升为主角元素，用拉丁字体 + 金色辉光。
 
 ```css
 .readout {
@@ -143,9 +143,9 @@ Any numeric value gets promoted to a hero element in Latin mono-ish type with a 
 .readout small { font-size: 13px; margin-left: 2px; color: var(--gold-dim); }
 ```
 
-### 5. Dotted bracket ornaments
+### 5. 点阵括号装饰
 
-2×3 dot grids flanking a centered label. Mirror the right one with `scaleX(-1)`.
+2×3 点阵成对夹住居中文字。右侧那个用 `scaleX(-1)` 镜像。
 
 ```css
 .dots {
@@ -157,9 +157,9 @@ Any numeric value gets promoted to a hero element in Latin mono-ish type with a 
 .dots.mirror { transform: scaleX(-1); }
 ```
 
-### 6. Angular slider
+### 6. 硬朗滑杆
 
-Thin track, diamond thumb, gold fill driven by a `--pct` variable set from JS.
+细轨道、菱形滑块，金色填充进度由 JS 写入的 `--pct` 变量驱动。
 
 ```css
 input[type=range] {
@@ -183,36 +183,36 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]:active::-webkit-slider-thumb { box-shadow: 0 0 16px rgba(230,207,149,1); }
 ```
 
-## Hard rules
+## 硬性规则
 
-**Zero border radius.** Pure right angles everywhere. Rounded corners destroy this language faster than any wrong color. Chamfers (45° cut corners) are the sanctioned alternative — see the rule below.
+**零圆角。** 全部纯直角。圆角摧毁这套语言的速度比任何配色错误都快。切角（45° 削角）是官方认可的替代方案——见下一条。
 
-**A chamfer must have its edge expressed.** Cutting a corner with `clip-path` only reads as design if something traces the diagonal. Two ways that happen for free:
+**切角必须有边缘表达。** 用 `clip-path` 削掉一个角，只有当有东西描出那条斜边时才读作"设计"。两种情况天然免费：
 
-- The element has a `border` — the border is clipped along with the box, so it follows the cut automatically. Use this for icon frames, badges, buttons.
-- The element is a solid filled shape — the fill *is* the edge. Use this for toggle knobs, indicators, tags.
+- 元素带 `border` —— 边框会跟着盒子一起被裁，自动沿切口描线。用于图标框、徽章、按钮。
+- 元素是实心色块 —— 填色本身就是边缘。用于拨杆、指示器、标签。
 
-A large **borderless** surface (a panel, a window) has neither, so a bare diagonal reads as damage — users report it as a rendering bug. Either draw an explicit hairline along the cut, or leave big surfaces square. Small chamfered components against square panels is the stronger composition anyway.
+而大面积**无边框**表面（面板、窗口）两者都没有，裸切一刀读作破损——用户会当成渲染 bug 上报。要么沿切口单独补一条金色发丝线，要么大表面干脆保持直角。「小组件切角 + 大面板直角」本来就是更强的构图。
 
 ```css
-/* Safe: border traces the cut */
+/* 安全：边框沿切口描线 */
 .icoframe {
   border: 1px solid var(--gold-dim);
   clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
 }
-/* Safe: solid fill is its own edge */
+/* 安全：实心填色自成边缘 */
 .switch::after {
   background: var(--gold-bright);
   clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
 ```
 
-**One accent color.** Gold carries every highlight, focus and active state. Adding a second accent makes it generic sci-fi.
+**只有一个强调色。** 所有高亮、聚焦、激活态都由金色承担。加第二个强调色就变成廉价科幻风了。
 
-**Brand gold never themes.** When content has its own color (a character, a team, a category), inject it into `--theme` and let it tint *content surfaces only* — thumbnails, avatar backgrounds. The gold skeleton stays gold. Per-item colors go on the item, not the root:
+**品牌金永不换肤。** 内容自带颜色时（角色、队伍、分类），把它注入 `--theme`，只允许染*内容表面*——缩略图、头像底色。金色骨架永远是金色。逐项的颜色写在项上，不写在根节点：
 
 ```css
-/* Each item carries its own --c; the global theme does not repaint siblings */
+/* 每个 item 自带 --c；全局主题变化不会重刷兄弟节点 */
 .item .thumb { background: linear-gradient(165deg, color-mix(in srgb, var(--c, var(--theme)) 32%, #12141a), #12141a); }
 ```
 
@@ -220,19 +220,19 @@ A large **borderless** surface (a panel, a window) has neither, so a bare diagon
 el.style.setProperty('--c', item.color);
 ```
 
-**Hairlines stay hairlines.** 1px borders, 1.5px brackets. Thicker reads as a cheap bootstrap theme.
+**发丝线就是发丝线。** 边框 1px、角标 1.5px。再粗就是廉价 bootstrap 皮肤。
 
-**Restraint on glow.** `box-shadow` bloom belongs on the diamond thumb, the readout and the active toggle. Not on cards, not on text bodies.
+**克制辉光。** `box-shadow` 泛光只属于菱形滑块、大数字读数和激活态开关。不上卡片，不上正文。
 
-## Anti-patterns
+## 反模式
 
-These are mistakes that look correct in code review and wrong on screen.
+这些错误在代码评审里看着没问题，上了屏幕才露馅。
 
-**Bare chamfers on borderless surfaces.** Covered in the hard rules above. Worth restating because it is the single most common way this style goes wrong: a `clip-path` cut on a panel with no border and no fill edge looks broken, not styled.
+**无边框表面上的裸切角。** 硬性规则里已讲，值得重复一遍，因为这是这套风格翻车率最高的一处：面板没有边框也没有填色边缘，`clip-path` 切完就是一个豁口，看着像坏了，不像设计。
 
-**`clip-path` on a range track.** Applying it to `::-webkit-slider-runnable-track` also clips the thumb — the diamond disappears. Style the track with background layers only.
+**range 轨道上用 `clip-path`。** 加在 `::-webkit-slider-runnable-track` 上会连滑块一起裁——菱形直接消失。轨道造型只用背景分层实现。
 
-**Scroll containers eating hover lift.** `overflow-x: auto` clips vertically too, so `translateY(-2px)` on hover and active-state shadows get cut off. Pad the container and cancel the space with negative margin:
+**滚动容器吃掉 hover 上浮。** `overflow-x: auto` 会同时裁剪纵向，hover 的 `translateY(-2px)` 和激活态阴影都被切掉。给容器加内边距，再用负 margin 抵消占位：
 
 ```css
 .gallery {
@@ -243,17 +243,17 @@ These are mistakes that look correct in code review and wrong on screen.
 .gallery::-webkit-scrollbar { display: none; }
 ```
 
-**Diamond thumbs clipped by input height.** A 12px square rotated 45° needs ~17px of diagonal. Give the range at least `height: 22px`.
+**菱形滑块被 input 高度裁剪。** 12px 方块旋转 45° 后对角线约 17px，range 至少要 `height: 22px`。
 
-**Latin labels as gibberish.** Wide-tracked Latin is only atmospheric when it means something. Untranslated pinyin or invented words break the illusion for anyone who reads English.
+**拉丁标签是乱码。** 大字距拉丁文只有在有含义时才是氛围。没翻译的拼音或生造词，会让任何看得懂英文的人瞬间出戏。
 
-**Emoji.** Never. Inline SVG stroke icons at 1.8–2.2 stroke width, gold or cream.
+**Emoji。** 绝不。用内联 SVG 描边图标，stroke 宽度 1.8–2.2，金色或米白。
 
-## Naming vocabulary
+## 命名词汇表
 
-Renaming plain settings labels into in-world terms is a large part of the effect. Translate function, keep it guessable:
+把平铺直叙的设置项改成"世界观内"的说法，是效果的重要来源。翻译功能、保持可猜：
 
-| Plain | In-world | Latin |
+| 平铺直叙 | 世界观内 | 拉丁 |
 |---|---|---|
 | 设置 | 共鸣终端 | `RESONANCE TERMINAL` |
 | 角色 | 共鸣者 | `RESONATOR` |
@@ -261,33 +261,33 @@ Renaming plain settings labels into in-world terms is a large part of the effect
 | 音量 | 声压 | `AMPLITUDE` |
 | 已保存 | 参数已同步 | `SYNCED` |
 
-Do not rename destructive or safety-critical actions. 删除 stays 删除.
+破坏性或安全相关的操作不许改名。「删除」就是「删除」。
 
-## Build order
+## 施工顺序
 
-1. Drop the token block into `:root`.
-2. Build the panel base (gradient + scanline + top hairline).
-3. Convert every container to `.card` with corner brackets, radius 0.
-4. Replace every section title with the bilingual header.
-5. Promote the most important number to a `.readout`.
-6. Swap dots/bullets/thumbs for diamonds.
-7. Add the dotted-bracket footer.
-8. Verify against the checklist below.
+1. 把令牌块放进 `:root`。
+2. 搭面板基底（渐变 + 扫描纹理 + 顶部发丝线）。
+3. 所有容器换成带四角角标的 `.card`，圆角归零。
+4. 所有区块标题换成中英双语标题。
+5. 把最重要的数字提升为 `.readout`。
+6. 圆点/项目符号/滑块全部换成菱形。
+7. 加点阵括号页脚。
+8. 对照下方清单验收。
 
-## Checklist
+## 验收清单
 
-- [ ] No `border-radius` anywhere; any chamfer has a border or solid fill tracing its cut
-- [ ] Exactly one accent hue (gold); content colors confined to `--theme` / per-item `--c`
-- [ ] Every card has corner brackets; active state lights all four
-- [ ] Every section header is CJK + rule + tracked Latin
-- [ ] Latin labels are meaningful translations
-- [ ] Scanline texture under 3% opacity
-- [ ] Diamond thumb visible and unclipped at both slider extremes
-- [ ] Hover lift not clipped by scroll containers
-- [ ] No emoji, no image assets, no web fonts
-- [ ] Contrast: `--cream` on `--bg-0` for body text; `--cream-dim` only for secondary
+- [ ] 全局无 `border-radius`；所有切角都有边框或实心填色描出切口
+- [ ] 有且只有一个强调色相（金）；内容色被约束在 `--theme` / 逐项 `--c` 里
+- [ ] 每张卡片有角标；激活态四角全亮
+- [ ] 每个区块标题都是 中文 + 横线 + 大字距拉丁
+- [ ] 拉丁标签是有意义的翻译
+- [ ] 扫描纹理透明度低于 3%
+- [ ] 滑杆两个极值处菱形滑块可见且未被裁
+- [ ] hover 上浮未被滚动容器裁剪
+- [ ] 无 emoji、无图片素材、无 Web 字体
+- [ ] 对比度：正文用 `--cream` 配 `--bg-0`；`--cream-dim` 只用于次要信息
 
-## Additional resources
+## 延伸资料
 
-- Full component recipes (title bar, item picker, switch, footer, presets) — [reference.md](reference.md)
-- Runnable component gallery — [demo.html](demo.html)
+- 完整组件配方（标题栏、选择器、开关、页脚、分段控件）—— [reference.md](reference.md)
+- 可运行的组件画廊 —— [demo.html](demo.html)

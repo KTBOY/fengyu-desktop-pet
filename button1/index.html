@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>共鸣接入 · RESONANCE LINK</title>
+<style>
+  /* ============ Resonance HUD 设计令牌 ============ */
+  :root {
+    --gold:        #c9ac67;
+    --gold-bright: #e6cf95;
+    --gold-dim:    rgba(201, 172, 103, .3);
+
+    --cream:     #fafae9;
+    --cream-dim: rgba(250, 250, 233, .45);
+
+    --bg-0: #14161a;
+    --bg-1: #1b1e23;
+    --card: rgba(255, 255, 255, .035);
+    --hair: rgba(201, 172, 103, .2);
+
+    --theme: #d9b45c;
+
+    --ease:  cubic-bezier(.32,.72,.24,1);
+    --latin: "Bahnschrift", "DIN Alternate", "Segoe UI", sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-0);
+    color: var(--cream);
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+  }
+
+  /* ============ 面板基底 ============ */
+  .stage {
+    position: relative;
+    width: 460px;
+    padding: 26px 30px 22px;
+    background:
+      radial-gradient(130% 80% at 100% 0%, rgba(201,172,103,.11), transparent 62%),
+      linear-gradient(168deg, var(--bg-1), var(--bg-0) 62%);
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    overflow: hidden;
+  }
+  /* 斜向扫描纹理 */
+  .stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(115deg,
+      rgba(255,255,255,.022) 0 1px, transparent 1px 5px);
+    pointer-events: none;
+  }
+  /* 顶边金色发丝光线 */
+  .stage::after {
+    content: '';
+    position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: linear-gradient(90deg, var(--gold), rgba(201,172,103,.35));
+    pointer-events: none; z-index: 3;
+  }
+
+  /* ============ 中英双语区块标题 ============ */
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+  .card-head .mk { width: 3px; height: 12px; background: var(--gold); flex: none; }
+  .card-head .zh { font-size: 13px; font-weight: 600; letter-spacing: 1.5px; }
+  .card-head .ln { flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-dim), transparent); }
+  .card-head .en { font: 400 8.5px/1 var(--latin); letter-spacing: 2.2px; color: var(--gold-dim); }
+
+  .arena {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 44px 0 40px;
+  }
+
+  /* 两侧菱形节点 */
+  .diamond {
+    position: absolute; top: 50%;
+    width: 6px; height: 6px; margin-top: -3px;
+    background: var(--gold); transform: rotate(45deg);
+    box-shadow: 0 0 8px rgba(201,172,103,.7);
+  }
+  .diamond.l { left: 6px; }
+  .diamond.r { right: 6px; }
+
+  /* ============ 按钮本体（复刻结构） ============ */
+  .button {
+    outline: none;
+    cursor: pointer;
+    font-size: 21px;
+    font-family: inherit;
+    background: transparent;
+    border: 0;
+    position: relative;
+    width: 230px;
+    height: 74px;
+  }
+
+  /* 悬浮层四角角标 —— 落在 wrap 的直角（非切角）两端 */
+  .button::before,
+  .button::after {
+    content: ''; position: absolute; z-index: 20;
+    width: 9px; height: 9px;
+    border-color: var(--gold); pointer-events: none;
+    transition: all .3s var(--ease);
+  }
+  .button::before { right: -7px; top: -7px;   border-top: 1.5px solid;    border-right: 1.5px solid; }
+  .button::after  { left: 5px;   bottom: 5px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
+  .button:hover::before { right: -9px; top: -9px;   border-color: var(--gold-bright); }
+  .button:hover::after  { left: 7px;   bottom: 7px; border-color: var(--gold-bright); }
+
+  /* 基座层 —— 硬边阶梯投影，替代原作的紫色模糊堆叠 */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background: #262117;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: transparent;
+    transition: all .3s var(--ease);
+    box-shadow:
+      -6px 6px 0 0 rgba(201,172,103,.14),
+      -12px 12px 0 0 rgba(201,172,103,.09),
+      -18px 18px 0 0 rgba(201,172,103,.05),
+      0 18px 40px rgba(0,0,0,.55);
+  }
+
+  /* 悬浮壳 —— 1px 金色发丝渐变描边，双角切角 */
+  .wrap {
+    overflow: hidden;
+    height: 100%;
+    transform: translate(6px, -6px);
+    padding: 1px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold-dim));
+    position: relative;
+    transition: all .3s var(--ease);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+
+  /* 旋转扫光 —— 悬停时点亮 */
+  .outline {
+    position: absolute;
+    overflow: hidden;
+    inset: 0;
+    opacity: 0;
+    outline: none;
+    transition: all .4s var(--ease);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .outline::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    width: 110px;
+    height: 300px;
+    margin: auto;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      var(--gold-bright) 50%,
+      transparent 100%
+    );
+    animation: spin 3s linear infinite;
+    animation-play-state: paused;
+  }
+
+  /* 面层 */
+  .content {
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    position: relative;
+    height: 100%;
+    gap: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    transition: all .3s var(--ease);
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(201,172,103,.16), transparent 60%),
+      linear-gradient(168deg, #23242a, #15171b 70%);
+    box-shadow:
+      inset 0 1px 0 rgba(230,207,149,.28),
+      inset 0 -10px 18px rgba(0,0,0,.5);
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  }
+  /* 面层扫描纹理 */
+  .content::before {
+    content: '';
+    inset: 0;
+    position: absolute;
+    z-index: 10;
+    background: repeating-linear-gradient(115deg,
+      rgba(255,255,255,.022) 0 1px, transparent 1px 5px);
+  }
+  /* 面层底部功能性拉丁标签 */
+  .content::after {
+    content: 'RESONANCE LINK';
+    position: absolute;
+    left: 0; right: 0; bottom: 5px;
+    text-align: center;
+    font: 400 7px/1 var(--latin);
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+  }
+
+  /* ============ 字符动画 ============ */
+  .char {
+    transition: all .3s var(--ease);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .char span {
+    display: block;
+    color: transparent;
+    position: relative;
+  }
+  .char.state-1 span {
+    animation: charAppear 1.2s ease backwards calc(var(--i) * 0.03s);
+  }
+  .char.state-1 span::before,
+  .char span::after {
+    content: attr(data-label);
+    position: absolute;
+    color: var(--cream);
+    text-shadow: 0 0 10px rgba(201,172,103,.35);
+    left: 0;
+  }
+  .char span::before {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  .char.state-2 {
+    position: absolute;
+    left: 92px;
+  }
+  .char.state-2 span::after {
+    opacity: 1;
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(201,172,103,.45);
+  }
+
+  /* ============ 箭头图标 ============ */
+  .icon {
+    animation: resetArrow .8s cubic-bezier(0.7, -0.5, 0.3, 1.2) forwards;
+    z-index: 10;
+  }
+  .icon div,
+  .icon div::before,
+  .icon div::after {
+    height: 2px;
+    background-color: var(--gold-bright);
+  }
+  .icon div::before,
+  .icon div::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    transform-origin: center right;
+    width: 13px;
+    transition: all .3s var(--ease);
+  }
+  .icon div {
+    position: relative;
+    width: 24px;
+    box-shadow: 0 0 8px rgba(201,172,103,.5);
+    transform: scale(0.9);
+    background: linear-gradient(to right, var(--gold), var(--gold-bright));
+    animation: swingArrow 1s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  .icon div::before {
+    transform: rotate(44deg);
+    top: 1px;
+    animation: rotateArrowLine 1s linear infinite;
+    animation-play-state: paused;
+  }
+  .icon div::after {
+    bottom: 1px;
+    transform: rotate(316deg);
+    animation: rotateArrowLine2 1s linear infinite;
+    animation-play-state: paused;
+  }
+
+  /* ============ 描边路径（focus 触发，切角矩形） ============ */
+  .path {
+    position: absolute;
+    z-index: 12;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    stroke: var(--gold-bright);
+    stroke-dasharray: 150 480;
+    stroke-dashoffset: 150;
+    pointer-events: none;
+  }
+
+  /* ============ 按压飞溅线条 ============ */
+  .splash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    stroke-dasharray: 60 60;
+    stroke-dashoffset: 60;
+    transform: translate(-17%, -31%);
+    stroke: var(--gold);
+  }
+
+  /* ============ 状态 ============ */
+  .button:hover .char.state-1 span::before {
+    animation: charAppear .7s ease calc(var(--i) * 0.03s);
+  }
+  .button:hover .char.state-1 span::after {
+    opacity: 1;
+    animation: charDisappear .7s ease calc(var(--i) * 0.03s);
+  }
+
+  .button:hover .wrap {
+    transform: translate(8px, -8px);
+  }
+  .button:hover .wrap { background: linear-gradient(to bottom, var(--gold-bright), var(--gold-dim)); }
+
+  .button:hover .outline {
+    opacity: 1;
+  }
+  .button:hover .outline::before,
+  .button:hover .icon div::before,
+  .button:hover .icon div::after,
+  .button:hover .icon div {
+    animation-play-state: running;
+  }
+
+  .button:active .bg::before {
+    opacity: .6;
+    box-shadow:
+      -4px 4px 0 0 rgba(201,172,103,.12),
+      -8px 8px 0 0 rgba(201,172,103,.07),
+      0 10px 24px rgba(0,0,0,.5);
+  }
+  .button:active .content {
+    box-shadow:
+      inset 0 10px 16px rgba(0,0,0,.55),
+      inset 0 -1px 0 rgba(230,207,149,.2);
+  }
+  .button:active .outline {
+    opacity: 0;
+  }
+  .button:active .wrap {
+    transform: translate(3px, -3px);
+  }
+  .button:active .splash {
+    animation: splash .8s cubic-bezier(0.3, 0, 0, 1) forwards .05s;
+  }
+
+  .button:focus .path {
+    animation: path 1.6s ease forwards .2s;
+  }
+  .button:focus .icon {
+    animation: arrow 1s cubic-bezier(0.7, -0.5, 0.3, 1.5) forwards;
+  }
+  .char.state-2 span::after,
+  .button:focus .char.state-1 span {
+    animation: charDisappear .5s ease forwards calc(var(--i) * 0.03s);
+  }
+  .button:focus .char.state-2 span::after {
+    animation: charAppear 1s ease backwards calc(var(--i) * 0.03s);
+  }
+
+  /* ============ 页脚点阵括号 ============ */
+  .foot {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    padding-top: 8px;
+    font: 400 8.5px/1 var(--latin);
+    letter-spacing: 2px; color: var(--cream-dim);
+    position: relative; z-index: 1;
+  }
+  .dots {
+    display: grid;
+    grid-template-columns: 2px 2px; grid-template-rows: 2px 2px 2px;
+    gap: 1.5px; opacity: .55;
+  }
+  .dots i { background: var(--gold); }
+  .dots.mirror { transform: scaleX(-1); }
+
+  /* ============ 关键帧 ============ */
+  @keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes charAppear {
+    0%   { transform: translateY(50%);  opacity: 0; filter: blur(20px); }
+    20%  { transform: translateY(70%);  opacity: 1; }
+    50%  { transform: translateY(-15%); opacity: 1; filter: blur(0); }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+
+  @keyframes charDisappear {
+    0%   { transform: translateY(0);    opacity: 1; }
+    100% { transform: translateY(-70%); opacity: 0; filter: blur(3px); }
+  }
+
+  @keyframes arrow {
+    0%   { opacity: 1; }
+    50%  { transform: translateX(60px);   opacity: 0; }
+    51%  { transform: translateX(-190px); opacity: 0; }
+    100% { transform: translateX(-118px); opacity: 1; }
+  }
+
+  @keyframes swingArrow {
+    50% { transform: translateX(5px) scale(0.9); }
+  }
+
+  @keyframes rotateArrowLine {
+    50% { transform: rotate(30deg); }
+    80% { transform: rotate(55deg); }
+  }
+
+  @keyframes rotateArrowLine2 {
+    50% { transform: rotate(330deg); }
+    80% { transform: rotate(300deg); }
+  }
+
+  @keyframes resetArrow {
+    0%   { transform: translateX(-118px); }
+    100% { transform: translateX(0); }
+  }
+
+  @keyframes path {
+    from { stroke: var(--cream); }
+    to   { stroke-dashoffset: -480; stroke: var(--gold-bright); }
+  }
+
+  @keyframes splash {
+    to { stroke-dasharray: 2 60; stroke-dashoffset: -60; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="card-head">
+    <span class="mk"></span>
+    <span class="zh">共鸣接入</span>
+    <span class="ln"></span>
+    <span class="en">RESONANCE LINK</span>
+  </div>
+
+  <div class="arena">
+    <span class="diamond l"></span>
+    <span class="diamond r"></span>
+
+    <button class="button">
+      <div class="bg"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 342 208" height="208" width="342" class="splash">
+        <path stroke-linecap="round" stroke-width="3" d="M54.1054 99.7837C54.1054 99.7837 40.0984 90.7874 26.6893 97.6362C13.2802 104.485 1.5 97.6362 1.5 97.6362"></path>
+        <path stroke-linecap="round" stroke-width="3" d="M285.273 99.7841C285.273 99.7841 299.28 90.7879 312.689 97.6367C326.098 104.486 340.105 95.4893 340.105 95.4893"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M281.133 64.9917C281.133 64.9917 287.96 49.8089 302.934 48.2295C317.908 46.6501 319.712 36.5272 319.712 36.5272"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M281.133 138.984C281.133 138.984 287.96 154.167 302.934 155.746C317.908 157.326 319.712 167.449 319.712 167.449"></path>
+        <path stroke-linecap="round" stroke-width="3" d="M230.578 57.4476C230.578 57.4476 225.785 41.5051 236.061 30.4998C246.337 19.4945 244.686 12.9998 244.686 12.9998"></path>
+        <path stroke-linecap="round" stroke-width="3" d="M230.578 150.528C230.578 150.528 225.785 166.471 236.061 177.476C246.337 188.481 244.686 194.976 244.686 194.976"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M170.392 57.0278C170.392 57.0278 173.89 42.1322 169.571 29.54C165.252 16.9478 168.751 2.05227 168.751 2.05227"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M170.392 150.948C170.392 150.948 173.89 165.844 169.571 178.436C165.252 191.028 168.751 205.924 168.751 205.924"></path>
+        <path stroke-linecap="round" stroke-width="3" d="M112.609 57.4476C112.609 57.4476 117.401 41.5051 107.125 30.4998C96.8492 19.4945 98.5 12.9998 98.5 12.9998"></path>
+        <path stroke-linecap="round" stroke-width="3" d="M112.609 150.528C112.609 150.528 117.401 166.471 107.125 177.476C96.8492 188.481 98.5 194.976 98.5 194.976"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M62.2941 64.9917C62.2941 64.9917 55.4671 49.8089 40.4932 48.2295C25.5194 46.6501 23.7159 36.5272 23.7159 36.5272"></path>
+        <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M62.2941 145.984C62.2941 145.984 55.4671 161.167 40.4932 162.746C25.5194 164.326 23.7159 174.449 23.7159 174.449"></path>
+      </svg>
+
+      <div class="wrap">
+        <!-- 切角矩形描边路径（原作为圆角矩形，此处按硬性规则改为 45° 切角） -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 221 42" height="42" width="221" class="path">
+          <path stroke-linecap="round" stroke-width="3"
+            d="M182.7 2 H211 L219 10 V32 L211 40 H10 L2 32 V10 L10 2 H47.9"></path>
+        </svg>
+
+        <div class="outline"></div>
+        <div class="content">
+          <span class="char state-1">
+            <span data-label="接" style="--i: 1">接</span>
+            <span data-label="入" style="--i: 2">入</span>
+            <span data-label="共" style="--i: 3">共</span>
+            <span data-label="鸣" style="--i: 4">鸣</span>
+          </span>
+
+          <div class="icon">
+            <div></div>
+          </div>
+
+          <span class="char state-2">
+            <span data-label="已" style="--i: 1">已</span>
+            <span data-label="同" style="--i: 2">同</span>
+            <span data-label="步" style="--i: 3">步</span>
+          </span>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  <div class="foot">
+    <span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    HOVER TO ENGAGE · CLICK TO SYNC
+    <span class="dots mirror"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-# 穗穗桌面精灵（Fengyu Desktop Pet）
+# 共鸣者桌面精灵（Fengyu Desktop Pet）
 
 基于 Electron + Canvas 的 Windows 桌面精灵。透明无边框窗口中显示一只可拖拽、会呼吸摆动、跟随鼠标、点击有反馈的立绘桌宠，支持**缩放**、**特效开关**与**多角色切换**。
 

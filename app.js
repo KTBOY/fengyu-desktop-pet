@@ -22,7 +22,7 @@
 
   // ---------- 星光粒子 ----------
   const sparks = [];
-  for (let i = 0; i < 8; i++) {          // 8 颗足够营造氛围，逐帧贝塞尔绘制成本减半（低配机友好）
+  for (let i = 0; i < 24; i++) {         // 24 颗星光增强氛围感，逐帧贝塞尔绘制开销仍然可控
     sparks.push({
       x: Math.random() * W,
       y: Math.random() * H,

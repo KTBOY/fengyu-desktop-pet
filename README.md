@@ -2,8 +2,8 @@
 
 基于 Electron + Canvas 的 Windows 桌面精灵。透明无边框窗口中显示一只可拖拽、会呼吸摆动、跟随鼠标、点击有反馈的立绘桌宠，支持**缩放**、**特效开关**与**多角色切换**。
 
-![char](D:/my/git/%E4%BA%BA%E7%89%A9/fengyu-desktop-pet/assets/char.png)
-
+![char](assets/char.png)
+![1785907782054](image/README/1785907782054.png)
 
 ---
 

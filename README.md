@@ -1,6 +1,8 @@
-# 共鸣者桌面精灵（Fengyu Desktop Pet）
+# 漂泊者桌面精灵（Fengyu Desktop Pet）
 
 基于 Electron + Canvas 的 Windows 桌面精灵。透明无边框窗口中显示一只可拖拽、会呼吸摆动、跟随鼠标、点击有反馈的立绘桌宠，支持**缩放**、**特效开关**与**多角色切换**。
+
+<img src="D:/my/git/%E4%BA%BA%E7%89%A9/fengyu-desktop-pet/public/image/0da9a7a21ffe9e00013583dbaa0c2835.png" alt="0da9a7a21ffe9e00013583dbaa0c2835" style="zoom:50%;" />
 
 ---
 

@@ -46,6 +46,16 @@ fengyu-desktop-pet/
 - Node.js（含 npm）
 - Windows x64
 
+### 下载方式
+
+```
+百度：https://pan.baidu.com/s/1A40SHmQHbrCCKCdk7JVvJw 
+	提取码: 6666
+
+git: https://github.com/KTBOY/fengyu-desktop-pet/releases/tag/v1.0
+
+```
+
 ### 安装依赖
 
 ```powershell

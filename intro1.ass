@@ -1,0 +1,15 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Tag, Microsoft YaHei, 34, &H005AC1E8, &H000000FF, &H00141414, &HA0000000, 1, 0, 0, 0, 100, 100, 3, 0, 1, 3, 2, 2, 60, 60, 70, 1
+Style: Title, Microsoft YaHei, 84, &H005AC1E8, &H000000FF, &H00141414, &HA0000000, 1, 0, 0, 0, 100, 100, 4, 0, 1, 5, 3, 5, 60, 60, 60, 1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.50,0:00:02.00,Tag,,0,0,0,,V1 TEST

@@ -10,6 +10,12 @@ dist/
 # 开发临时截图
 _*.png
 
+# 本地工具（ffmpeg 等，不入库）
+tools/
+
+# 演示素材/产物
+demo/
+
 # 运行/开发临时文件
 *.log
 preview.png

@@ -2,7 +2,8 @@
 
 基于 Electron + Canvas 的 Windows 桌面精灵。透明无边框窗口中显示一只可拖拽、会呼吸摆动、跟随鼠标、点击有反馈的立绘桌宠，支持**缩放**、**特效开关**与**多角色切换**。
 
-<img src="D:/my/git/%E4%BA%BA%E7%89%A9/fengyu-desktop-pet/public/image/0da9a7a21ffe9e00013583dbaa0c2835.png" alt="0da9a7a21ffe9e00013583dbaa0c2835" style="zoom:50%;" />
+![char](D:/my/git/%E4%BA%BA%E7%89%A9/fengyu-desktop-pet/assets/char.png)
+
 
 ---
 
@@ -44,19 +45,24 @@ fengyu-desktop-pet/
 ## 🚀 运行方式
 
 ### 环境要求
+
 - Node.js（含 npm）
 - Windows x64
 
 ### 安装依赖
+
 ```powershell
 npm install
 ```
 
 ### 启动开发运行
+
 ```powershell
 npm start
 ```
+
 等价于 `electron .`。若 `npm` 的 shim 环境异常，也可直接运行：
+
 ```powershell
 node_modules\electron\dist\electron.exe .
 ```
@@ -77,6 +83,7 @@ node pack.js
 ```
 
 ### 只打包指定角色（其余角色不进包）
+
 在 `pack.js` 后面跟上角色 id（即 `assets/characters/` 下的目录名）：
 
 ```powershell
@@ -98,17 +105,18 @@ npm run pack -- fengyu
 
 ## 🎮 使用说明
 
-| 操作 | 效果 |
-|---|---|
-| 左键拖动人物 | 移动桌宠位置 |
-| 单击人物 | 弹跳 + 迸发爱心/星星 + 随机台词 |
-| 双击人物 | 特别台词 |
-| 右键人物 | 上下文菜单（设置/置顶/隐藏/穿透/退出） |
-| `Ctrl + ,` | 打开设置面板 |
-| `Esc` / `Ctrl + Q` | 退出 |
-| 托盘图标双击 | 显示 / 隐藏 |
+| 操作                   | 效果                                   |
+| ---------------------- | -------------------------------------- |
+| 左键拖动人物           | 移动桌宠位置                           |
+| 单击人物               | 弹跳 + 迸发爱心/星星 + 随机台词        |
+| 双击人物               | 特别台词                               |
+| 右键人物               | 上下文菜单（设置/置顶/隐藏/穿透/退出） |
+| `Ctrl + ,`           | 打开设置面板                           |
+| `Esc` / `Ctrl + Q` | 退出                                   |
+| 托盘图标双击           | 显示 / 隐藏                            |
 
 **设置面板**（右键菜单或托盘「设置…」进入）：
+
 - **角色**：点击缩略图切换角色，即时预览、自动保存。
 - **人物大小**：滑块或 小/中/默认/大 预设。
 - **星光特效**：开关环绕星光。
@@ -120,6 +128,7 @@ npm run pack -- fengyu
 准备一张（纯白背景的）全身立绘，在 `assets/characters/` 下新建目录并写 `meta.json` 即可，**通常无需改代码**。详见 [`agent.md`](./agent.md) 的完整规范与配色指引。
 
 最小示例：
+
 ```
 assets/characters/my-char/
   char.png

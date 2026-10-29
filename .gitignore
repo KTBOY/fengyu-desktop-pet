@@ -16,6 +16,9 @@ tools/
 # 演示素材/产物
 demo/
 
+# mesh 原型自动截图取证产物（含 Miko 渲染图，素材条款禁止单独再分发）
+mesh-proto/out/
+
 # 运行/开发临时文件
 *.log
 preview.png
